@@ -1,0 +1,28 @@
+# Weekly test: downloads the newest backup, checks every file against its checksum
+# and rebuilds the search index from it, to prove the backup can actually be restored.
+name: Test restore
+on:
+  schedule:
+    - cron: "__TEST_CRON__"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Download newest backup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(gh release list --limit 100 --json tagName --jq '[.[] | select(.tagName | startswith("zk-backup-"))][0].tagName')
+          if [ -z "$TAG" ]; then echo "::error::No backups found"; exit 1; fi
+          echo "Testing $TAG"
+          gh release download "$TAG" --pattern "*.zip" --dir "$RUNNER_TEMP/test"
+          echo "ZIP=$RUNNER_TEMP/test/$TAG.zip" >> "$GITHUB_ENV"
+      - name: Verify and rebuild index
+        run: node .zk/tools/backup.mjs verify "$ZIP"
