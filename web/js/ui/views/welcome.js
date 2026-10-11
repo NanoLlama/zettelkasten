@@ -89,7 +89,7 @@ function buildConnectForm() {
       h('li', null, 'Create a free account at github.com if you don’t have one.'),
       h('li', null, 'Create a new ', h('strong', null, 'private'), ' repository, for example “my-notes”.'),
       h('li', null, 'Create a fine-grained access token for that repository only, with these permissions set to “Read and write”: ', h('em', null, 'Contents, Actions, Workflows'), '.'),
-      h('li', null, 'Paste both below. ', h('a', { href: GUIDE_URL, target: '_blank', rel: 'noopener' }, 'Step-by-step guide with pictures'), '.')),
+      h('li', null, 'Paste both below. ', h('a', { href: GUIDE_URL, target: '_blank', rel: 'noopener' }, 'Step-by-step setup guide'), '.')),
     h('label', { class: 'field' }, h('span', { class: 'label' }, 'Repository (owner/name)'), repo),
     h('label', { class: 'field' }, h('span', { class: 'label' }, 'Access token'), token),
     h('label', { class: 'check' }, samples, h('span', null, 'Also add the ~30 sample notes (you can delete them later)')),

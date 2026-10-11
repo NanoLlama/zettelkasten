@@ -1,0 +1,23 @@
+# Runs the unit tests and the phone-size browser tests on every push and pull request.
+name: Tests
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Vendored libraries match package versions
+        run: npm run vendor && git diff --exit-code web/vendor
+      - name: Unit tests
+        run: npm test
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Phone-size browser tests
+        run: npm run test:e2e
