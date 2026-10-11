@@ -27,6 +27,15 @@ export function welcomeView(ctx) {
 
   page.append(
     intro,
+    isIosSafariTab()
+      ? h('div', { class: 'card nudge' },
+          h('strong', null, 'On iPhone: install first, then connect.'),
+          h('p', null, 'The app on your Home Screen keeps its own storage, separate from Safari. If you connect here and then add it to the Home Screen, it will ask you to connect again.'),
+          h('ol', { class: 'steps' },
+            h('li', null, 'Tap the Share button, then ', h('strong', null, 'Add to Home Screen'), '.'),
+            h('li', null, 'Open Slip-box from its new icon and connect there. It will stay connected.')),
+          h('p', { class: 'muted small' }, 'Already connected in Safari? Open Settings there and tap “Copy connection code”, then paste the code in the installed app.'))
+      : null,
     cfg && cfg.mode !== 'demo' ? h('p', { class: 'card' }, 'You are connected. ', h('a', { href: '#/' }, 'Go to your notes')) : null,
     h('div', { class: 'welcome-choices' },
       h('div', { class: 'card choice-card' },
@@ -52,6 +61,13 @@ function buildConnectForm() {
 
   const form = h('form', { class: 'card connect-form', onsubmit: async (e) => {
     e.preventDefault();
+    for (const input of [repo, token]) {
+      const code = parseConnectionCode(input.value);
+      if (code) {
+        repo.value = `${code.owner}/${code.repo}`;
+        token.value = code.token;
+      }
+    }
     const m = /^\s*(?:https?:\/\/github\.com\/)?([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?\s*$/.exec(repo.value);
     if (!m) return (status.textContent = 'Enter the repository as owner/name, e.g. jane/my-notes.');
     if (!token.value.trim()) return (status.textContent = 'Paste your access token.');
@@ -89,7 +105,7 @@ function buildConnectForm() {
       h('li', null, 'Create a free account at github.com if you don’t have one.'),
       h('li', null, 'Create a new ', h('strong', null, 'private'), ' repository, for example “my-notes”.'),
       h('li', null, 'Create a fine-grained access token for that repository only, with these permissions set to “Read and write”: ', h('em', null, 'Contents, Actions, Workflows'), '.'),
-      h('li', null, 'Paste both below. ', h('a', { href: GUIDE_URL, target: '_blank', rel: 'noopener' }, 'Step-by-step setup guide'), '.')),
+      h('li', null, 'Paste both below (or paste a connection code from another device into either box). ', h('a', { href: GUIDE_URL, target: '_blank', rel: 'noopener' }, 'Step-by-step setup guide'), '.')),
     h('label', { class: 'field' }, h('span', { class: 'label' }, 'Repository (owner/name)'), repo),
     h('label', { class: 'field' }, h('span', { class: 'label' }, 'Access token'), token),
     h('label', { class: 'check' }, samples, h('span', null, 'Also add the ~30 sample notes (you can delete them later)')),
@@ -97,4 +113,21 @@ function buildConnectForm() {
     go,
     status);
   return form;
+}
+
+/** True in a Safari tab on iPhone/iPad (not the installed home-screen app). */
+function isIosSafariTab() {
+  return 'standalone' in navigator && navigator.standalone === false;
+}
+
+/** Reads a code made by Settings → Copy connection code. */
+export function parseConnectionCode(text) {
+  const m = /^\s*zk1:([A-Za-z0-9+/=]+)\s*$/.exec(text || '');
+  if (!m) return null;
+  try {
+    const c = JSON.parse(atob(m[1]));
+    return c.owner && c.repo && c.token ? c : null;
+  } catch {
+    return null;
+  }
 }
