@@ -1,0 +1,24 @@
+{
+  "name": "zettelkasten",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A phone-friendly digital Zettelkasten. Static web app; notes are Markdown files in a private GitHub repository.",
+  "scripts": {
+    "serve": "node scripts/serve.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "vendor": "node scripts/vendor.mjs",
+    "seed": "node scripts/build-seed.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "dompurify": "^3.4.16",
+    "fflate": "^0.8.3",
+    "js-yaml": "^4.3.2",
+    "mammoth": "^1.13.0",
+    "markdown-it": "^14.3.2",
+    "pdfjs-dist": "^4.10.38",
+    "vitest": "^3.2.7"
+  }
+}
