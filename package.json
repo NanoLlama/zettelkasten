@@ -9,7 +9,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "vendor": "node scripts/vendor.mjs",
-    "seed": "node scripts/build-seed.mjs"
+    "seed": "TZ=America/New_York node scripts/build-seed.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",

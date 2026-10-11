@@ -91,5 +91,6 @@ export function contextSnippet(body, index, titleOf, max = 160) {
   }
   return linksToText(line, titleOf)
     .replace(/^\s*(?:[-*+]|\d+\.|#+|>)\s+/, '')
+    .replace(/(\*\*|__|\*|`|~~)/g, '')
     .trim();
 }

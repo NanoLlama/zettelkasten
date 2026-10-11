@@ -1,0 +1,47 @@
+# Restores the vault from a backup. Started from the Slip-box app (Settings → Backups → Restore).
+# A safety backup of the current state is taken first.
+name: Restore
+on:
+  workflow_dispatch:
+    inputs:
+      backup:
+        description: Name of the backup to restore (e.g. zk-backup-20261011-0200)
+        required: true
+permissions:
+  contents: write
+concurrency:
+  group: zk-backup
+  cancel-in-progress: false
+env:
+  TZ: "__TZ__"
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Safety backup of the current vault
+        id: safety
+        run: node .zk/tools/backup.mjs archive "$RUNNER_TEMP/safety" zk-prerestore
+      - name: Store safety backup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.safety.outputs.name }}" "${{ steps.safety.outputs.zip }}" \
+            --title "Safety copy before restoring ${{ inputs.backup }}" \
+            --notes "Taken automatically before restoring ${{ inputs.backup }}." --latest=false
+      - name: Download and restore
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BACKUP: ${{ inputs.backup }}
+        run: |
+          case "$BACKUP" in zk-backup-*|zk-prerestore-*) ;; *) echo "::error::Not a backup name"; exit 1;; esac
+          gh release download "$BACKUP" --pattern "*.zip" --dir "$RUNNER_TEMP/restore"
+          node .zk/tools/backup.mjs restore "$RUNNER_TEMP/restore/$BACKUP.zip"
+          git config user.name "Slip-box backup"
+          git config user.email "backup@users.noreply.github.com"
+          git add -A
+          git commit -qm "Restore vault from $BACKUP" || echo "Nothing changed"
+          git push -q

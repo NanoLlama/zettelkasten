@@ -17,6 +17,15 @@ export const isNotePath = (p) => p.startsWith(NOTES_DIR) && p.endsWith('.md') &&
 
 const titleKey = (t) => normalize(t).replace(/\s+/g, ' ').trim();
 
+/** Removes Markdown punctuation so search snippets read as plain text. */
+export function stripMarkdown(text) {
+  return text
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]*)\]\((?!attachment:)[^)]*\)/g, '$1')
+    .replace(/^\s{0,3}(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, '')
+    .replace(/(\*\*|__|\*|`|~~)/g, '');
+}
+
 export function noteFromFile(path, text) {
   const { data, body, error } = parseNote(text);
   const id = data.id != null && ID_RE.test(String(data.id)) ? String(data.id) : idFromFileName(path);
@@ -128,7 +137,7 @@ export class Vault {
     this.index.add(n.id, {
       title: n.title,
       tags: n.tags.join(' '),
-      body: linksToText(n.body, (t) => this.notes.get(t)?.title || t),
+      body: stripMarkdown(linksToText(n.body, (t) => this.notes.get(t)?.title || t)),
       attach: `${names}\n${attach}`,
     });
   }
