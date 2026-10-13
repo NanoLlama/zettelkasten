@@ -167,6 +167,7 @@ export function setBanner(node) {
 }
 
 function render({ keepScroll = false } = {}) {
+  clearTimeout(pending);
   if (!zk.config && !location.hash.startsWith('#/welcome')) {
     history.replaceState(null, '', '#/welcome');
   }
@@ -215,7 +216,11 @@ function scheduleRerender() {
     return;
   }
   clearTimeout(pending);
-  pending = setTimeout(() => render({ keepScroll: true }), 60);
+  pending = setTimeout(() => {
+    // The screen may have changed (e.g. to the editor) since this refresh was scheduled.
+    if (current?.ctx.static) current.ctx.onChange?.();
+    else render({ keepScroll: true });
+  }, 60);
 }
 
 function refreshChrome() {

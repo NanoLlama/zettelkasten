@@ -51,17 +51,21 @@ The token lets the app read and save files in that one repository, and start bac
    (*Metadata: Read-only* is added automatically.)
 6. Click **Generate token** and **copy** it (it starts with `github_pat_`). GitHub shows it only once.
 
-## 4. Connect on your iPhone and add to the home screen
+## 4. Install on your iPhone, then connect
+
+Do these in this order. An app added to the Home Screen keeps its own storage, separate from
+Safari, so a connection made in Safari does not carry over to the icon.
 
 1. Open **Safari** and go to **https://nanollama.github.io/zettelkasten/**
-2. Tap **Connect my vault**.
-3. **Repository:** `your-github-name/my-notes`. **Access token:** paste the token.
+2. Tap the **Share** button (square with an arrow) → **Add to Home Screen** → **Add**.
+3. Close Safari and open **Slip-box from its new icon**.
+4. Tap **Connect my vault**. **Repository:** `your-github-name/my-notes`. **Access token:** paste the token.
    Tick *Also add the sample notes* if you'd like examples (you can delete them later).
-4. Tap **Connect**. The app checks the repository is private and sets up the vault and backups.
-5. Tap the **Share** button (square with an arrow) → **Add to Home Screen** → **Add**.
+5. Tap **Connect**. The app checks the repository is private and sets up the vault and backups.
 
-From now on open Slip-box from its home-screen icon: it runs full screen and works offline.
-Repeat step 4 on other devices (iPad, laptop) with the same repository and token. They all stay in sync.
+It stays connected from then on, offline included. To connect another device (iPad, laptop) without
+looking up the token again: in the connected app open **Settings → Copy connection code**, send it
+to yourself privately, and paste it into either box on the other device's Connect screen.
 
 > **Tip:** with the app open, turn your phone sideways in **Review** for the two-pane reading mode.
 
@@ -111,6 +115,7 @@ automatically before saving (you can turn this off in Settings).
 | *The token is missing a permission* when tapping **Back up now** | Give the token **Actions: Read and write**. |
 | A grey **Offline** label | Changes are saved on the phone and upload when you're back online. |
 | A note called "… (conflict copy …)" in the inbox | The note was edited on two devices at once. Your latest edit is kept; the copy holds the other version. Merge what you need and delete the copy. |
+| The Home Screen app asks to connect again | You probably connected in Safari first. Connect once inside the Home Screen app (Settings → *Copy connection code* in Safari makes this quick). If it keeps happening, check **Settings → Safari → Advanced → Website Data** isn't being cleared, and that you're not in Private Browsing. |
 | Search or links look wrong | **Settings → Reindex all**. |
 
 ## Opening your notes elsewhere

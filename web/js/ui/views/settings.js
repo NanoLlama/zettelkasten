@@ -37,6 +37,7 @@ export function settingsView(ctx) {
     syncInfo,
     h('div', { class: 'row gap wrap' },
       btn('Sync now', async () => { await zk.refresh(); drawSync(); toast(zk.status.error ? 'Sync had a problem' : 'Up to date'); }, { icon: 'sync' }),
+      !zk.isDemo ? btn('Copy connection code', copyConnectionCode, { icon: 'clip' }) : null,
       !zk.isDemo ? h('a', { class: 'btn', href: zk.remote.webUrl, target: '_blank', rel: 'noopener' }, icon('link'), h('span', null, 'Open on GitHub')) : null,
       zk.isDemo ? h('a', { class: 'btn primary', href: '#/welcome?connect=1' }, h('span', null, 'Connect GitHub vault')) : null,
       btn(zk.isDemo ? 'Leave demo' : 'Sign out on this device', signOut, { icon: 'close' }))));
@@ -210,6 +211,20 @@ async function reindex() {
   }
   for (const rec of await zk.local.getAll()) if (!rec.path.startsWith('attachments/')) await zk.local.delete(rec.path);
   location.reload();
+}
+
+/** A code holding the repository and token, to connect another device or the home-screen app. */
+async function copyConnectionCode() {
+  const { owner, repo, branch, token } = zk.config;
+  const code = 'zk1:' + btoa(JSON.stringify({ owner, repo, branch, token }));
+  const ok = await confirmDialog('This copies a code that contains your access token. Paste it only into Slip-box on your own devices, and don’t share it.', { ok: 'Copy code' });
+  if (!ok) return;
+  try {
+    await navigator.clipboard.writeText(code);
+    toast('Copied. In the other app, tap “Connect my vault” and paste it into either box.', { timeout: 6000 });
+  } catch {
+    await dialog({ title: 'Connection code', content: h('textarea', { class: 'input', rows: 4, readonly: true, value: code, onfocus: (e) => e.target.select() }) });
+  }
 }
 
 async function signOut() {

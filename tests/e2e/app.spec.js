@@ -185,3 +185,27 @@ test('touch targets are at least 44px and nothing scrolls sideways', async ({ pa
     expect(small, route).toBe(0);
   }
 });
+
+test('in an iPhone Safari tab the welcome screen says to install before connecting', async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(navigator, 'standalone', { value: false }));
+  await page.goto('./#/welcome');
+  await expect(page.getByText('On iPhone: install first, then connect.')).toBeVisible();
+});
+
+test('a connection code fills in the repository and token', async ({ page }) => {
+  await page.goto('./#/welcome?connect=1');
+  // Answer the GitHub checks so the test needs no network.
+  await page.route('https://api.github.com/**', (route) => {
+    const url = route.request().url();
+    if (url.endsWith('/repos/me/notes')) return route.fulfill({ json: { private: true, default_branch: 'main', permissions: { push: true }, owner: { login: 'me' }, name: 'notes' } });
+    if (url.includes('/git/trees/')) return route.fulfill({ status: 409, json: { message: 'Git Repository is empty.' } });
+    return route.fulfill({ status: 403, json: { message: 'stop here' } });
+  });
+  const code = 'zk1:' + Buffer.from(JSON.stringify({ owner: 'me', repo: 'notes', branch: 'main', token: 'github_pat_test' })).toString('base64');
+  await page.getByLabel('Access token').fill(code);
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page.getByLabel('Repository')).toHaveValue('me/notes');
+  await expect(page.getByLabel('Access token')).toHaveValue('github_pat_test');
+  // The connection itself was saved (setup then stopped at the fake 403).
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('zk:config'))?.repo)).toBe('notes');
+});
